@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "My First Extension",
+  "description": "Template for creating Chrome extensions with React + Typescript + Vite + Tailwindcss",
+  "version": "1.0.1",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "icons": {
+    "32": "icon32.png"
+  },
+  "background": {
+    "service_worker": "src/background/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content.ts"]
+    }
+  ],
+  "devtools_page": "index.html"
+}
