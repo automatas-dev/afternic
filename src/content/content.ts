@@ -1,4 +1,4 @@
-import { ChromeMessage, Sender } from "../types";
+import { ChromeMessage, Sender } from "@/types";
 
 type MessageResponse = (response?: any) => void;
 
@@ -16,7 +16,23 @@ const messagesFromReactAppListener = (
 ) => {
   const isValidated = validateSender(message, sender);
 
-  if (isValidated && message.message === "Hello from React") {
+  if (isValidated && message.message === "Submit") {
+    const form = document.querySelector('[data-testid="add-domains-form"]') as HTMLFormElement | null;
+    const textarea = document.getElementById("domains") as HTMLTextAreaElement | null;
+
+    // TODO: issue here
+    if (textarea) {
+      textarea.innerHTML = message.data.domains!.join("\n"); // Join domains by new line
+    } else {
+      console.error("Textarea with id 'domains' not found.");
+    }
+
+    // if (form) {
+    //   form.submit();
+    // } else {
+    //   console.error("Form not found.");
+    // }
+
     response("Hello from content.js");
   }
 

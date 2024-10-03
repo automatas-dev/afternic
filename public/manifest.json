@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "My First Extension",
-  "description": "Template for creating Chrome extensions with React + Typescript + Vite + Tailwindcss",
-  "version": "1.0.1",
+  "name": "Afternic Auto",
+  "description": "Automate afternic submission process",
+  "version": "1.0.0",
   "action": {
     "default_popup": "index.html"
   },
@@ -11,8 +11,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://*/*",
-    "https://*/*"
+    "https://www.afternic.com/domains/"
   ],
   "icons": {
     "32": "icon32.png"

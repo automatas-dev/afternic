@@ -1,87 +1,85 @@
-import {useEffect, useState} from "react";
-import {getCurrentTabUId, getCurrentTabUrl} from "./utils";
-import {ChromeMessage, Sender} from "./types";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import {getCurrentTabUId} from "@/utils";
+import {ChromeMessage, Sender} from "@/types";
+
+const FormSchema = z.object({
+    domains: z.string()
+        .min(1, { message: "Please enter at least one domain." })
+        .refine(
+            (value) => {
+                const lines = value.split('\n');
+                return lines.length <= 500 && lines.every(line => /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(line.trim()));
+            },
+            {
+                message: "Please enter up to 500 valid domain names, one per line.",
+            }
+        ),
+});
 
 function App() {
-    const [color, setColor] = useState('red');
-    const [url, setUrl] = useState<string>("");
-    const [responseFromContent, setResponseFromContent] = useState<string>("");
+    const form = useForm<z.infer<typeof FormSchema>>({
+        resolver: zodResolver(FormSchema),
+        defaultValues: {
+            domains: "",
+        },
+    });
 
-    /**
-     * Get current URL
-     */
-    useEffect(() => {
-        getCurrentTabUrl((url) => {
-            setUrl(url || "undefined");
-        });
-    }, []);
+    function onSubmit(data: z.infer<typeof FormSchema>) {
+        const domainList = data.domains.split('\n').map(domain => domain.trim());
+        console.log(domainList);
 
-    const sendTestMessage = () => {
         const message: ChromeMessage = {
             from: Sender.React,
-            message: "Hello from React",
+            message: "Submit",
+            data: {
+                domains: domainList,
+            }
         };
 
         getCurrentTabUId((id) => {
             if (id) {
                 chrome.tabs.sendMessage(id, message, (responseFromContentScript) => {
-                    setResponseFromContent(responseFromContentScript);
+                    console.log(responseFromContentScript);
                 });
             }
-        });
-    };
-
-    const sendRemoveMessage = () => {
-        const message: ChromeMessage = {
-            from: Sender.React,
-            message: "delete logo",
-        };
-
-        getCurrentTabUId((id) => {
-            if (id) {
-                chrome.tabs.sendMessage(id, message, (response) => {
-                    setResponseFromContent(response);
-                });
-            }
-        });
-    };
-
-    const onClick = async () => {
-        const [tab] = await chrome.tabs.query({active: true});
-
-        await chrome.scripting.executeScript<string[], void>({
-            target: {tabId: tab.id!},
-            args: [color],
-            func: (color) => {
-                document.body.style.backgroundColor = color;
-            },
         });
     }
 
     return (
-        <>
-            <div
-                className="bg-gray-100 p-5 min-h-screen">  {/* Apply a light gray background and padding to the container */}
-                <p className="text-xl font-semibold">Home</p> {/* Larger text and semi-bold */}
-                <p>URL:</p>
-                <p className="mb-4">{url}</p> {/* Margin-bottom for spacing */}
-                <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mr-2"
-                        onClick={sendTestMessage}>
-                    SEND MESSAGE
-                </button>
-                <button className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-                        onClick={sendRemoveMessage}>
-                    Remove logo
-                </button>
-                <p className="mt-4">Response from content:</p>
-                <p>{responseFromContent}</p>
-                <input type="color" onChange={event => setColor(event.currentTarget.value)} className="mb-4"/>
-                <button onClick={onClick} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    Click Here nowwww!
-                </button>
-            </div>
-        </>
-    )
+        <div className="p-4 w-full max-w-[800px] mx-auto">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+                    <FormField
+                        control={form.control}
+                        name="domains"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>Domain Names</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="Enter domain names (one per line, up to 500)"
+                                        {...field}
+                                        rows={10}
+                                        className="w-full resize-vertical"
+                                    />
+                                </FormControl>
+                                <FormDescription>
+                                    Enter up to 500 domain names, one per line.
+                                </FormDescription>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="w-full">Submit</Button>
+                </form>
+            </Form>
+        </div>
+    );
 }
 
-export default App
+export default App;
