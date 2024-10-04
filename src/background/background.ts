@@ -35,21 +35,11 @@
 //   console.log("[background.js] onSuspend");
 // });
 
-import {ChromeMessage, Sender} from "@/types";
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-
-    const message: ChromeMessage = {
-        from: Sender.React,
-        message: "RouteChanged",
-        data: {
-            route: changeInfo.url,
-        }
-    };
-
-    if (changeInfo.url) {
-        chrome.tabs.sendMessage(tabId, message, (responseFromContentScript) => {
-            console.log(responseFromContentScript)
-        });
-    }
+chrome.runtime.onMessage.addListener((request, sender) => {
+  if (request.message === "reload") {
+    console.log("Reloading tab " + sender.tab?.id," with delay ", request.delay);
+    setTimeout(() => {
+      if (sender.tab?.id) chrome.tabs.update(sender.tab.id, { url: "https://www.afternic.com/domains/add", active: true });
+    }, request.delay);
+  }
 });
