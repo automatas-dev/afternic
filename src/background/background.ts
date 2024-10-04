@@ -34,3 +34,22 @@
 // chrome.runtime.onSuspend.addListener(() => {
 //   console.log("[background.js] onSuspend");
 // });
+
+import {ChromeMessage, Sender} from "@/types";
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+
+    const message: ChromeMessage = {
+        from: Sender.React,
+        message: "RouteChanged",
+        data: {
+            route: changeInfo.url,
+        }
+    };
+
+    if (changeInfo.url) {
+        chrome.tabs.sendMessage(tabId, message, (responseFromContentScript) => {
+            console.log(responseFromContentScript)
+        });
+    }
+});

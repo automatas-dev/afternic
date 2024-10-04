@@ -6,8 +6,9 @@ enum Sender {
 interface ChromeMessage {
   from: Sender;
   message: string;
-  data: {
+  data?: {
     domains?: string[];
+    route?: string;
   }
 }
 

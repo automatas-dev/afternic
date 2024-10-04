@@ -29,15 +29,23 @@ function App() {
         },
     });
 
-    function onSubmit(data: z.infer<typeof FormSchema>) {
+    async function onSubmit(data: z.infer<typeof FormSchema>) {
         const domainList = data.domains.split('\n').map(domain => domain.trim());
         console.log(domainList);
+
+        let currentData: string[]
+        if (domainList.length <= 50) {
+            currentData = domainList;
+        } else {
+            currentData = domainList.slice(0, 50);
+            await chrome.storage.local.set({"domains": domainList.slice(50)});
+        }
 
         const message: ChromeMessage = {
             from: Sender.React,
             message: "Submit",
             data: {
-                domains: domainList,
+                domains: currentData,
             }
         };
 
